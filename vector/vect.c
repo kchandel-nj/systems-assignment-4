@@ -27,7 +27,14 @@ vect_t *vect_new() {
 
   /* [TODO] Complete the function */
 
-  vect_t *v = NULL;
+  vect_t *v = (vect_t *) malloc(sizeof(vect_t));
+  assert(v != NULL);
+
+  v->data = (char **) malloc(sizeof(char *) * VECT_INITIAL_CAPACITY);
+  assert(v->data != NULL);
+
+  v->size = 0;
+  v->capacity = VECT_INITIAL_CAPACITY;
 
   return v;
 }
@@ -37,6 +44,14 @@ void vect_delete(vect_t *v) {
 
   /* [TODO] Complete the function */
 
+  assert(v != NULL);
+
+  for (unsigned int i = 0; i < v->size; i++) {
+    free(v->data[i]);
+  }
+  free(v->data);
+  free(v);
+
 }
 
 /** Get the element at the given index. */
@@ -45,8 +60,8 @@ const char *vect_get(vect_t *v, unsigned int idx) {
   assert(idx < v->size);
 
   /* [TODO] Complete the function */
-
-  return NULL;
+  
+  return v->data[idx];
 }
 
 /** Get a copy of the element at the given index. The caller is responsible
@@ -57,14 +72,26 @@ char *vect_get_copy(vect_t *v, unsigned int idx) {
 
   /* [TODO] Complete the function */
 
-  return NULL;
+  char *copy = (char *) malloc(strlen(v->data[idx]) + 1);
+  assert(copy != NULL);
+  strcpy(copy, v->data[idx]);
+
+  return copy;
 }
+
 /** Set the element at the given index. */
 void vect_set(vect_t *v, unsigned int idx, const char *elt) {
   assert(v != NULL);
   assert(idx < v->size);
 
   /* [TODO] Complete the function */
+
+  char *copy = (char *) malloc(strlen(elt) + 1);
+  assert(copy != NULL);
+  strcpy(copy, elt);
+
+  free(v->data[idx]);
+  v->data[idx] = copy;
 
 }
 
@@ -74,6 +101,30 @@ void vect_add(vect_t *v, const char *elt) {
 
   /* [TODO] Complete the function */
 
+  if (v->size == v->capacity) {
+    assert(v->capacity < VECT_MAX_CAPACITY);
+ 
+    /* Use a wider type so the multiplication cannot overflow. */
+    unsigned long long new_capacity =
+        (unsigned long long) v->capacity * VECT_GROWTH_FACTOR;
+    if (new_capacity > VECT_MAX_CAPACITY) {
+      new_capacity = VECT_MAX_CAPACITY;
+    }
+ 
+    char **new_data = (char **) realloc(v->data, sizeof(char *) * new_capacity);
+    assert(new_data != NULL);
+ 
+    v->data = new_data;
+    v->capacity = (unsigned int) new_capacity;
+  }
+ 
+  char *copy = (char *) malloc(strlen(elt) + 1);
+  assert(copy != NULL);
+  strcpy(copy, elt);
+ 
+  v->data[v->size] = copy;
+  v->size++;
+
 }
 
 /** Remove the last element from the vector. */
@@ -81,6 +132,12 @@ void vect_remove_last(vect_t *v) {
   assert(v != NULL);
 
   /* [TODO] Complete the function */
+
+  assert(v->size > 0);
+
+  v->size--;
+  free(v->data[v->size]);
+  v->data[v->size] = NULL;
 
 }
 
@@ -90,6 +147,8 @@ unsigned int vect_size(vect_t *v) {
 
   /* [TODO] Complete the function */
 
+  return v->size;
+
   return 0;
 }
 
@@ -98,6 +157,8 @@ unsigned int vect_current_capacity(vect_t *v) {
   assert(v != NULL);
 
   /* [TODO] Complete the function */
+
+  return v->capacity;
 
   return 0;
 }
